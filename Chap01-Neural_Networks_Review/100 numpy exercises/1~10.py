@@ -6,7 +6,9 @@ print(np.__version__)
 np.show_config()
 
 # 3. Create a null vector of size 10
-
+a = np.zeros(10)
+print(a)
+ 
 # 4. How to find the memory size of any array
 
 # 5. How to get the documentation of the numpy add function from the command line?
