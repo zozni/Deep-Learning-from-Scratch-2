@@ -10,6 +10,9 @@ a = np.zeros(10)
 print(a)
  
 # 4. How to find the memory size of any array
+print(a.nbytes)
+print(a.size * a.itemsize)
+print(np.prod(a.shape) * a.itemsize)
 
 # 5. How to get the documentation of the numpy add function from the command line?
 
