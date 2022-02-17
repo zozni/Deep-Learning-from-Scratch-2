@@ -21,14 +21,14 @@ def preprocess(text):
     return corpus, word_to_id, id_to_word
 
 
-def cos_similarity(x, y, eps=1e-8):
-    '''코사인 유사도 산출
-    :param x: 벡터
-    :param y: 벡터
+def cos_similarity(x, y, eps=1e-8):    # cos유사도 구하는 함수
+    '''코사인 유사도 산출                      # 사실 이 구현에는 문제가 있다. 인수로 원소가 모두 0인 벡터(제로벡터)가 들어오면 
+    :param x: 벡터                            # divide by zero 오류가 발생한다. 이 문제의 해결방법은 나눌 때 분모에 작은 값을 더해주는 것이다.
+    :param y: 벡터                                                   # 작은 값을 뜻하는 eps(epsilon)를 인수로 받는다. 아래는 개선된 코드.
     :param eps: '0으로 나누기'를 방지하기 위한 작은 값
     :return:
     '''
-    nx = x / np.sqrt(np.sum(x**2) + eps)  # x의 정규화
+    nx = x / np.sqrt(np.sum(x**2) + eps)  # x의 정규화     벡터 x,y를 정규화한 후 두 벡터의 내적을 구한다.
     ny = y / np.sqrt(np.sum(y**2) + eps)  # y의 정규화
     return np.dot(nx, ny)
 
@@ -56,11 +56,11 @@ def most_similar(query, word_to_id, id_to_word, word_matrix, top=5):
     for i in range(vocab_size):
         similarity[i] = cos_similarity(word_matrix[i], query_vec)
         
-    # 3) 코사인 유사도를 기준으로 내림차순으로 출력
-    count = 0
-    for i in (-1 * similarity).argsort():
-        if id_to_word[i] == query:
-            continue
+    # 3) 코사인 유사도를 기준으로 내림차순으로 출력  
+    count = 0                                          # similarity 배열에 담긴 원소의 인덱스를 내림차순으로 정렬한 후 상위 원소들을 출력한다.
+    for i in (-1 * similarity).argsort():              # 이때 배열 인덱스의 정렬을 바꾸는데 사용한 argsort() 메소드는 넘파이 배열의 원소를 오름차순으로 정렬한다.
+        if id_to_word[i] == query:                     # 우리가 구하고자 하는 것은 내림차순이니까 배열의 각 원소에 -1을 곱한 후 argsort()를 호출.
+            continue                                   # 이렇게 단어의 유사도가 높은 순서로 출력할 수 있다.
         print(f' {id_to_word[i]}: {similarity[i]}')
         
         count +=1
@@ -90,7 +90,7 @@ def convert_one_hot(corpus, vocab_size):
     return one_hot
 
 
-def create_co_matrix(corpus, vocab_size, window_size=1):
+def create_co_matrix(corpus, vocab_size, window_size=1):  # 이 함수는 corpus가 아무리 커지더라도 자동으로 동시발생 행렬을 만들어준다.
     '''동시발생 행렬 생성
     :param corpus: 말뭉치(단어 ID 목록)
     :param vocab_size: 단어 수
@@ -98,14 +98,14 @@ def create_co_matrix(corpus, vocab_size, window_size=1):
     :return: 동시발생 행렬
     '''
     corpus_size = len(corpus)
-    co_matrix = np.zeros((vocab_size, vocab_size), dtype=np.int32)
+    co_matrix = np.zeros((vocab_size, vocab_size), dtype=np.int32)  # 먼저 0으로 채워진 2차원 배열로 초기화
     
-    for idx, word_id in enumerate(corpus):
+    for idx, word_id in enumerate(corpus):            # 말뭉치의 모든 단어 각각에 대하여 윈도우에 포함된 주변 단어를 세어나간다.
         for i in range(1, window_size + 1):
             left_idx = idx - i  # left window_size
             right_idx = idx + i  # right window_size
 
-            if left_idx >= 0:
+            if left_idx >= 0:                             # 말뭉치의 왼쪽 끝과 오른쪽 끝 경계를 벗어나지 않는지도 확인한다.
                 left_word_id = corpus[left_idx]
                 co_matrix[word_id, left_word_id] += 1
 
@@ -117,11 +117,11 @@ def create_co_matrix(corpus, vocab_size, window_size=1):
 
 
 # common/util.py
-def ppmi(C, verbose=False, eps=1e-8):
+def ppmi(C, verbose=False, eps=1e-8):   # 이 코드는 동시발생 행렬에 대해서만 PPMI 행렬을 구할 수 있도록 하고자 단순화해서 구현된 것.
     '''PPMI(점별 상호정보량) 생성
     :param C: 동시발생 행렬
-    :param verbose: 진행 상황을 출력할지 여부
-    :return: ppmi
+    :param verbose: 진행 상황을 출력할지 여부를 결정하는 플래그     # 큰 말뭉치를 다룰 때 verbose=True로 설정하면 중간중간 
+    :return: ppmi                                               # 진행상황을 알려줌.
     '''
     M = np.zeros_like(C, dtype=np.float32)
     N = np.sum(C)  # num of corpus
