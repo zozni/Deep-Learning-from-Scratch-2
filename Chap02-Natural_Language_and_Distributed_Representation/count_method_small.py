@@ -21,8 +21,9 @@ print(U[0])  # SVD
 # 2차원으로 차원 축소하기
 print(U[0, :2])
 
-# 플롯
+# 플롯  
+# 각 단어를 2차원 벡터로 표현한 후 그래프로 그려본 것.
 for word, word_id in word_to_id.items():
-    plt.annotate(word, (U[word_id, 0], U[word_id, 1]))
+    plt.annotate(word, (U[word_id, 0], U[word_id, 1]))   # annotate(word,x,y) 메소드는 2차원 그래프상에서 좌표 x,y 지점에 word에 담긴 텍스트를 그린다.
 plt.scatter(U[:,0], U[:,1], alpha=0.5)
 plt.show()

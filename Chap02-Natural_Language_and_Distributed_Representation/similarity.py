@@ -1,3 +1,5 @@
+""" 두 단어의 유사도 출력 """
+
 import sys
 sys.path.append('..')
 from common.util import preprocess, create_co_matrix, cos_similarity
