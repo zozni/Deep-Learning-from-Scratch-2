@@ -208,13 +208,13 @@ def eval_seq2seq(model, question, correct, id_to_char,
 
     return 1 if guess == correct else 0  
 
-def create_contexts_target(corpus, window_size=1):
-    '''맥락과 타깃 생성
+def create_contexts_target(corpus, window_size=1):  
+    '''맥락과 타깃을 만드는 함수
     :param corpus: 말뭉치(단어 ID 목록)
     :param window_size: 윈도우 크기(윈도우 크기가 1이면 타깃 단어 좌우 한 단어씩이 맥락에 포함)
     :return: (맥락, 타겟)의 np.array
     '''
-    target = corpus[window_size:-window_size]
+    target = corpus[window_size:-window_size]    # 맥락과 타깃을 각각 넘파이 다차원 배열로 돌려준다.
     contexts = []
     
     for idx in range(window_size, len(corpus)-window_size):
@@ -225,8 +225,8 @@ def create_contexts_target(corpus, window_size=1):
                 cs.append(corpus[idx + t])
         contexts.append(cs)
         
-    return np.array(contexts), np.array(target)
-
+    return np.array(contexts), np.array(target)   # 말뭉치로부터 맥락과 타깃을 만들어냈다. (여전히 이 맥락과 타깃의 각 원소는 단어ID)
+                                                  # 나중에 이를 CBOW 모델에 넘겨주면 된다. 
 
 def to_cpu(x):
     import numpy

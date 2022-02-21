@@ -7,7 +7,7 @@ from common.np import *
 from common.util import clip_grads
 
 
-class Trainer:
+class Trainer:    # 매개변수를 갱신할 때 매개변수의 중복을 없애는 간단한 작업을 수행하도록 함.
     def __init__(self, model, optimizer):
         self.model = model
         self.optimizer = optimizer

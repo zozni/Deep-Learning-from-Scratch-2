@@ -4,8 +4,9 @@ from common.np import *
 from common.config import GPU
 from common.functions import softmax, cross_entropy_error
 
-class MatMul:
-    def __init__(self, W):
+# 이 함수는 내부에서 행렬 곱을 계산한다.
+class MatMul:     # 학습하는 매개변수를 params에 보관한다. 그리고 거기에 대응시키는 형태로 기울기는 grads에 보관한다.
+    def __init__(self, W):    
         self.params = [W]
         self.grads = [np.zeros_like(W)]
         self.x = None
@@ -16,7 +17,7 @@ class MatMul:
         self.x = x
         return out
     
-    def backward(self, dout):
+    def backward(self, dout):    # 역전파에서는 dx와 dW를 구해 가중치의 기울기를 인스턴스 변수인 grads에 저장한다.
         W, = self.params
         dx = np.matmul(dout, W.T)
         dW = np.matmul(self.x.T, dout)
