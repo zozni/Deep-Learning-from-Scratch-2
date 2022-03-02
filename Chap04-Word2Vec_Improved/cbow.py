@@ -23,7 +23,7 @@ class CBOW:
         # 모든 가중치와 기울기를 배열에 모은다.
         layers = self.in_layers + [self.ns_loss]
         self.params, self.grads = [], []
-        for layer in layers:
+        for layer in layers:   # 신경망에서 사용하는 모든 매개변수와 기울기를 인스턴스 변수인 params와 grads에 모은다.
             self.params += layer.params
             self.grads += layer.grads
             
@@ -31,7 +31,7 @@ class CBOW:
         self.word_vecs1 = W_in
         self.word_vecs2 = W_out
         
-    def forward(self, contexts, target):
+    def forward(self, contexts, target): # 메소드가 인수로 받는 맥락과 타깃이 단어 ID이다.
         h = 0
         for i, layer in enumerate(self.in_layers):
             h += layer.forward(contexts[:, i])

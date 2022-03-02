@@ -6,15 +6,15 @@ from common.np import *
 from common.layers import Embedding, SigmoidWithLoss
 
 class EmbeddingDot:
-    def __init__(self, W):
-        self.embed = Embedding(W)
-        self.params = self.embed.params
-        self.grads = self.embed.grads
-        self.cache = None
+    def __init__(self, W):             
+        self.embed = Embedding(W)  # Embedding 계층의 계산결과를 잠시 유지.
+        self.params = self.embed.params  # params에는 매개변수를 저장.
+        self.grads = self.embed.grads  # grads에는 기울기를 저장.
+        self.cache = None # 순전파시의 계산결과를 잠시 유지.
         
-    def forward(self, h, idx):
-        target_W = self.embed.forward(idx)
-        out = np.sum(target_W * h, axis=1)
+    def forward(self, h, idx):    # 순전파를 담당. h(은닉층뉴런), 단어ID의 넘파이배열(idx)
+        target_W = self.embed.forward(idx) # 배열로 받는 이유는 데이터를 한꺼번에 처리하는 미니배치 처리를 가정했기 때문.
+        out = np.sum(target_W * h, axis=1)   # forward 메소드에서는 우선 Embedding 계층의 forward(idx)를 호출한 다음 내적을 계산한다.
         
         self.cache = (h, target_W)
         return out
@@ -29,8 +29,8 @@ class EmbeddingDot:
         return dh
 
 
-class UnigramSampler:
-    def __init__(self, corpus, power, sample_size):
+class UnigramSampler: # 이 메소드는 target 인수로 지정한 단어를 정답으로 해석하고 그 외의 단어 ID를 샘플링한다.
+    def __init__(self, corpus, power, sample_size): # 단어ID목록(corpus), 확률분포에 제곱할 값 0.75 (power), 오답 샘플링 횟수(sample_size)
         self.sample_size = sample_size
         self.vocab_size = None
         self.word_p = None
@@ -74,21 +74,21 @@ class UnigramSampler:
         return negative_sample
 
 
-class NegativeSamplingLoss:
+class NegativeSamplingLoss: # 초기화 메소드
     def __init__(self, W, corpus, power=0.75, sample_size=5):
         self.sample_size = sample_size 
         self.sampler = UnigramSampler(corpus, power, sample_size)
-        self.loss_layers = [SigmoidWithLoss() for _ in range(sample_size + 1)]
-        self.embed_dot_layers = [EmbeddingDot(W) for _ in range(sample_size + 1)]
+        self.loss_layers = [SigmoidWithLoss() for _ in range(sample_size + 1)] # 원하는 계층을 리스트로 보관한다.
+        self.embed_dot_layers = [EmbeddingDot(W) for _ in range(sample_size + 1)]  # 원하는 계층을 리스트로 보관한다.
         
         self.params, self.grads = [], []
         for layer in self.embed_dot_layers:
             self.params += layer.params
             self.grads += layer.grads
             
-    def forward(self, h, target):
+    def forward(self, h, target): # 은닉층 뉴런(h), 긍정적 예의 타깃을 뜻하는 target
         batch_size = target.shape[0]
-        negative_sample = self.sampler.get_negative_sample(target)
+        negative_sample = self.sampler.get_negative_sample(target) # 부정적 예를 샘플링하여 nega_sample에 저장.
         
         # 긍정적 예 순전파
         score = self.embed_dot_layers[0].forward(h, target)
@@ -100,7 +100,7 @@ class NegativeSamplingLoss:
         for i in range(self.sample_size):
             negative_target = negative_sample[:, i]  # embed_dot에 해당하는 타겟이라는 의미인 듯
             score = self.embed_dot_layers[1 + i].forward(h, negative_target)
-            loss += self.loss_layers[1 + i].forward(score, negative_label)
+            loss += self.loss_layers[1 + i].forward(score, negative_label) # 정답/오답 예에 대해 손실을 더함.
             
         return loss
     
@@ -108,6 +108,6 @@ class NegativeSamplingLoss:
         dh = 0
         for l0, l1 in zip(self.loss_layers, self.embed_dot_layers):
             dscore = l0.backward(dout)
-            dh += l1.backward(dscore)
+            dh += l1.backward(dscore)  # 여러개의 기울기값을 더해준다.
         
         return dh
