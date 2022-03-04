@@ -136,7 +136,7 @@ class Embedding:
         self.grads = [np.zeros_like(W)]
         self.idx = None
         
-    def forward(self, idx):
+    def forward(self, idx):  # 인스턴스 변수 idx에는 추출하는 행의 인덱스 (단어 ID)를 배열로 저장한다.
         W, = self.params
         self.idx = idx
         out = W[idx]
@@ -145,5 +145,6 @@ class Embedding:
     def backward(self, dout):
         dW, = self.grads
         dW[...] = 0
-        np.add.at(dW, self.idx, dout)
-        return None
+        np.add.at(dW, self.idx, dout) # 해당 인덱스에 기울기를 더함으로써 idx에 중복 인덱스가 있더라도 올바르게 처리된다.
+        return None                   # np.add.at(A, idx, B)는 B를 A의 idx번째 행에 더해준다. 
+                                      # for문 대신 넘파이의 내장 메소드를 사용하면 효율이 훨씬 좋아진다.
